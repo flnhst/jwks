@@ -75,14 +75,10 @@ impl Jwks {
                             error: err,
                         })?;
 
-                    let alg = jwk.common.key_algorithm.ok_or(JwkError::MissingAlgorithm {
-                        key_id: kid.clone(),
-                    })?;
-
                     keys.insert(
                         kid,
                         Jwk {
-                            alg: alg,
+                            alg: jwk.common.key_algorithm,
                             decoding_key: decoding_key,
                         },
                     );
@@ -94,14 +90,10 @@ impl Jwks {
                             error: err,
                         })?;
 
-                    let alg = jwk.common.key_algorithm.ok_or(JwkError::MissingAlgorithm {
-                        key_id: kid.clone(),
-                    })?;
-
                     keys.insert(
                         kid,
                         Jwk {
-                            alg: alg,
+                            alg: jwk.common.key_algorithm,
                             decoding_key: decoding_key,
                         },
                     );
@@ -114,15 +106,11 @@ impl Jwks {
                                 error: err,
                             }
                         })?;
-                    
-                    let alg = jwk.common.key_algorithm.ok_or(JwkError::MissingAlgorithm {
-                        key_id: kid.clone(),
-                    })?;
 
                     keys.insert(
                         kid,
                         Jwk {
-                            alg: alg,
+                            alg: jwk.common.key_algorithm,
                             decoding_key: decoding_key,
                         },
                     );
@@ -136,15 +124,11 @@ impl Jwks {
                         }
                     })?;
 
-                    let alg = jwk.common.key_algorithm.ok_or(JwkError::MissingAlgorithm {
-                        key_id: kid.clone(),
-                    })?;
-
                     let decoding_key = DecodingKey::from_secret(&base64_decoded);
                     keys.insert(
                         kid,
                         Jwk {
-                            alg: alg,
+                            alg: jwk.common.key_algorithm,
                             decoding_key: decoding_key,
                         },
                     );
@@ -159,7 +143,7 @@ impl Jwks {
 #[derive(Clone)]
 #[allow(dead_code)]
 pub struct Jwk {
-    pub alg: KeyAlgorithm,
+    pub alg: Option<KeyAlgorithm>,
     pub decoding_key: DecodingKey,
 }
 
@@ -241,8 +225,8 @@ mod tests {
         let jwks_url = server.url(jwks_path);
         let jwks = Jwks::from_jwks_url(&jwks_url).await.unwrap();
         assert_eq!(jwks.keys.len(), 2);
-        assert_eq!(jwks.keys.get("91413cf4fa0cb92a3c3f5a054509132c47660937").unwrap().alg, KeyAlgorithm::RS256);
-        assert_eq!(jwks.keys.get("1f40f0a8ef3d880978dc82f25c3ec317c6a5b781").unwrap().alg, KeyAlgorithm::RS256);
+        assert_eq!(jwks.keys.get("91413cf4fa0cb92a3c3f5a054509132c47660937").unwrap().alg, Some(KeyAlgorithm::RS256));
+        assert_eq!(jwks.keys.get("1f40f0a8ef3d880978dc82f25c3ec317c6a5b781").unwrap().alg, Some(KeyAlgorithm::RS256));
 
         // get keys by key id (kid)
         _ = &jwks
@@ -362,8 +346,8 @@ mod tests {
         let oidc_config_url = oidc_server.url(oidc_config_path);
         let jwks = Jwks::from_oidc_url(&oidc_config_url).await.unwrap();
         assert_eq!(jwks.keys.len(), 2);
-        assert_eq!(jwks.keys.get("91413cf4fa0cb92a3c3f5a054509132c47660937").unwrap().alg, KeyAlgorithm::RS256);
-        assert_eq!(jwks.keys.get("1f40f0a8ef3d880978dc82f25c3ec317c6a5b781").unwrap().alg, KeyAlgorithm::RS256);
+        assert_eq!(jwks.keys.get("91413cf4fa0cb92a3c3f5a054509132c47660937").unwrap().alg, Some(KeyAlgorithm::RS256));
+        assert_eq!(jwks.keys.get("1f40f0a8ef3d880978dc82f25c3ec317c6a5b781").unwrap().alg, Some(KeyAlgorithm::RS256));
 
         // get keys by key id (kid)
         _ = &jwks
